@@ -1,8 +1,14 @@
 from flask import Flask
 from redis import Redis, RedisError
 import os
+import re
 import socket
 import json
+
+# Detect service name
+for k in dict(os.environ).keys():
+    if re.match(".*_SERVICE_HOST", k) and not re.match("KUBERNETES_SERVICE_HOST", k):
+        SERVICE_NAME = re.sub("_SERVICE_HOST$", "", k)
 
 # Connect to Redis
 try:
@@ -43,4 +49,8 @@ def hello():
 
 
 if __name__ == "__main__":
-    app.run(debug=False, host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
+    app.run(
+        debug=False,
+        host="0.0.0.0",
+        port=int(os.getenv(SERVICE_NAME + "_SERVICE_PORT", "5000")),
+    )
